@@ -60,45 +60,11 @@ cargo test
 
 ## Homebrew 安装
 
-安装后的命令名是 `trash`。
-
-推荐分发方式：
-
-1. 源码仓库正常维护
-2. 单独创建一个 Homebrew tap 仓库，例如 `homebrew-tap`
-3. 把 formula 放到 `Formula/trash-cli-macos.rb`
-4. 用户通过 tap 安装，但实际执行命令仍然是 `trash`
-
-仓库里已经放了一份 formula 模板：
-
-- [Formula/trash-cli-macos.rb](Formula/trash-cli-macos.rb)
-
-发布前你需要替换：
-
-- `OWNER/REPO` 为真实 GitHub 仓库路径
-- `sha256` 为发布 tarball 的校验值
-
-典型发布流程：
-
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
-shasum -a 256 trash-cli-macos-0.1.0.tar.gz
-```
-
-发布后用户的典型安装方式：
-
-```sh
-brew tap YOUR_NAME/tap
-brew install YOUR_NAME/tap/trash-cli-macos
+brew tap walavave/tap
+brew install --formula walavave/tap/trash-cli-macos
 trash --version
 ```
-
-说明：
-
-- Homebrew formula 名可以保留为 `trash-cli-macos`
-- 但实际安装出来的二进制命令是 `trash`
-- 这样比直接把 formula 也命名成 `trash` 更稳，能避免与其他公式冲突
 
 ## 命令概览
 
@@ -112,7 +78,7 @@ trash [empty|trash-empty] [OPTIONS] [DAYS]
 trash [rm|trash-rm] [OPTIONS] PATTERN
 ```
 
-如果不显式传入命令，默认命令是 `restore`。
+如果不显式传入命令，会直接显示帮助。
 
 全局选项：
 

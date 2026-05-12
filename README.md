@@ -63,46 +63,11 @@ cargo test
 
 ## Homebrew
 
-The installed command name is `trash`.
-
-Recommended distribution model:
-
-1. Keep this project source in a normal repository
-2. Publish a Homebrew tap repository, for example `homebrew-tap`
-3. Put a formula file at `Formula/trash-cli-macos.rb`
-4. Install the formula from that tap, but run the binary as `trash`
-
-A formula template is included at:
-
-- [Formula/trash-cli-macos.rb](Formula/trash-cli-macos.rb)
-
-Before publishing it, replace:
-
-- `OWNER/REPO` with your real GitHub repository path
-- `sha256` with the checksum of the tagged release tarball
-
-Typical release flow:
-
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
-shasum -a 256 trash-cli-macos-0.1.0.tar.gz
-```
-
-Typical end-user install flow after the tap is published:
-
-```sh
-brew tap YOUR_NAME/tap
-brew install YOUR_NAME/tap/trash-cli-macos
+brew tap walavave/tap
+brew install --formula walavave/tap/trash-cli-macos
 trash --version
 ```
-
-Notes:
-
-- The Homebrew formula name can stay `trash-cli-macos`
-- The actual executable installed by that formula is `trash`
-- This is safer than naming the formula itself `trash`, which may collide
-  with other formulas
 
 ## Command Overview
 
@@ -116,7 +81,7 @@ trash [empty|trash-empty] [OPTIONS] [DAYS]
 trash [rm|trash-rm] [OPTIONS] PATTERN
 ```
 
-If no command is provided, the default command is `restore`.
+If no command is provided, the tool shows help.
 
 Global options:
 

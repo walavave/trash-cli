@@ -169,6 +169,9 @@ where
             value if value.starts_with('-') => {
                 return Err(Error::message(format!("unknown flag: {value}")));
             }
+            value if command.is_none() => {
+                return Err(Error::message(format!("unknown command: {value}")));
+            }
             value => positional.push(value.to_string()),
         }
     }
@@ -202,15 +205,14 @@ where
         Some("rm") | Some("trash-rm") => Command::Rm {
             pattern: parse_pattern(positional)?,
         },
-        None => Command::Restore {
-            target_path: if positional.len() > 1 {
-                return Err(Error::message("only one positional path is supported"));
-            } else {
-                positional.into_iter().next().map(PathBuf::from)
-            },
-            sort,
-            overwrite,
-        },
+        None => {
+            help = true;
+            Command::Restore {
+                target_path: None,
+                sort,
+                overwrite,
+            }
+        }
         Some(other) => return Err(Error::message(format!("unknown command: {other}"))),
     };
 
