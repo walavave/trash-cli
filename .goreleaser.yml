@@ -1,0 +1,43 @@
+version: 2
+
+project_name: trash-cli
+
+before:
+  hooks:
+    - rustup default stable
+
+builds:
+  - id: trash
+    builder: rust
+    binary: trash
+    tool: cargo
+    command: build
+    targets:
+      - aarch64-apple-darwin
+    flags:
+      - --locked
+      - --release
+
+archives:
+  - id: macos-archive
+    ids:
+      - trash
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Target }}"
+    wrap_in_directory: true
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  github:
+    owner: walavave
+    name: trash-cli

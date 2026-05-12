@@ -1,0 +1,57 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust artifacts
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: . -> target
+
+      - name: Test
+        run: cargo test --locked
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  homebrew-releaser:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Release source formula to Homebrew tap
+        uses: Justintime50/homebrew-releaser@v2
+        with:
+          homebrew_owner: walavave
+          homebrew_tap: homebrew-tap
+          formula_folder: Formula
+          target_formula: trash-cli
+          github_token: ${{ secrets.TAP_GITHUB_TOKEN }}
+          commit_owner: goreleaserbot
+          commit_email: bot@goreleaser.com
+          install: 'system "cargo", "install", "--locked", *std_cargo_args(path: ".")'
+          test: 'assert_match version.to_s, shell_output("#{bin}/trash --version")'
