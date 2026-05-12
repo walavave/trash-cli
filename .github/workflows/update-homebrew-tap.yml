@@ -76,7 +76,7 @@ jobs:
           git config user.name goreleaserbot
           git config user.email bot@goreleaser.com
 
-          if git diff --quiet -- Formula/trash-cli.rb; then
+          if [ -z "$(git status --porcelain -- Formula/trash-cli.rb)" ]; then
             echo "Formula/trash-cli.rb is already up to date"
             exit 0
           fi
