@@ -27,9 +27,6 @@ archives:
     name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Target }}"
     wrap_in_directory: true
 
-checksum:
-  name_template: checksums.txt
-
 changelog:
   sort: asc
   filters:

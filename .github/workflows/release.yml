@@ -38,20 +38,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  homebrew-releaser:
+  update-homebrew-tap:
     needs: goreleaser
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Release source formula to Homebrew tap
-        uses: Justintime50/homebrew-releaser@v2
-        with:
-          homebrew_owner: walavave
-          homebrew_tap: homebrew-tap
-          formula_folder: Formula
-          target_formula: trash-cli
-          github_token: ${{ secrets.TAP_GITHUB_TOKEN }}
-          commit_owner: goreleaserbot
-          commit_email: bot@goreleaser.com
-          install: 'system "cargo", "install", "--locked", *std_cargo_args(path: ".")'
-          test: 'assert_match version.to_s, shell_output("#{bin}/trash --version")'
+    uses: ./.github/workflows/update-homebrew-tap.yml
+    secrets: inherit
+    with:
+      tag: ${{ github.ref_name }}
