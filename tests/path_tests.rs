@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use trash_cli_macos::path::{normalize, relative_to};
+use trash_cli::path::{normalize, relative_to};
 
 #[test]
 fn normalizes_relative_segments() {

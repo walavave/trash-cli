@@ -1,4 +1,4 @@
-use trash_cli_macos::restore::parse_indexes;
+use trash_cli::restore::parse_indexes;
 
 #[test]
 fn parses_ranges() {

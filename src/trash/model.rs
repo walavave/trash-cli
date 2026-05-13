@@ -10,7 +10,7 @@ pub struct TrashRoot {
 #[derive(Debug, Clone)]
 pub struct TrashedFile {
     pub original_location: PathBuf,
-    pub deletion_date: Option<String>,
+    pub modified_date: Option<String>,
     pub trashed_at: Option<SystemTime>,
     pub trash_path: PathBuf,
     pub trash_root: TrashRoot,

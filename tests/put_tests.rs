@@ -4,9 +4,9 @@ use std::fs;
 mod temp;
 
 use temp::temp_dir;
-use trash_cli_macos::args::{Cli, Command};
-use trash_cli_macos::put;
-use trash_cli_macos::trash::ds_store::read_entries;
+use trash_cli::args::{Cli, Command};
+use trash_cli::put;
+use trash_cli::trash::ds_store::read_entries;
 
 #[test]
 fn put_appends_numeric_suffix_for_name_collisions() {

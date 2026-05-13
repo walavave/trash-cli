@@ -11,8 +11,6 @@ For Simplified Chinese documentation, see [README_zh-CN.md](README_zh-CN.md).
 
 - Supports the command set commonly associated with `trash-cli`:
   `put`, `list`, `restore`, `empty`, and `rm`
-- Accepts both short subcommands and upstream-style aliases:
-  `trash-put`, `trash-list`, `trash-restore`, `trash-empty`, `trash-rm`
 - Reads native macOS Trash metadata from `.DS_Store`
 - Writes new trashed entries back into the native macOS Trash structure
 - Works with home trash, top-level volume trash, mounted volume trash, and
@@ -65,7 +63,7 @@ cargo test
 
 ```sh
 brew tap walavave/tap
-brew install --formula walavave/tap/trash-cli-macos
+brew install --formula walavave/tap/trash-cli
 trash --version
 ```
 
@@ -74,11 +72,11 @@ trash --version
 The binary is a single executable with subcommands:
 
 ```text
-trash [restore|trash-restore] [OPTIONS] [PATH]
-trash [list|trash-list] [OPTIONS] [PATH]
-trash [put|trash-put] [OPTIONS] FILE...
-trash [empty|trash-empty] [OPTIONS] [DAYS]
-trash [rm|trash-rm] [OPTIONS] PATTERN
+trash restore [OPTIONS] [PATH]
+trash list [OPTIONS] [PATH]
+trash put [OPTIONS] FILE...
+trash empty [OPTIONS] [DAYS]
+trash rm [OPTIONS] PATTERN
 ```
 
 If no command is provided, the tool shows help.
@@ -99,7 +97,7 @@ Move one or more files or directories into the trash.
 
 ```sh
 trash put ./foo.txt ./build.log
-trash trash-put ./dir-a ./dir-b
+trash put ./dir-a ./dir-b
 ```
 
 Notes:
@@ -114,7 +112,7 @@ List trashed files.
 
 ```sh
 trash list
-trash trash-list ./src
+trash list ./src
 trash list --sort path
 ```
 
@@ -134,7 +132,7 @@ Interactively restore trashed files.
 ```sh
 trash restore
 trash restore ./src
-trash trash-restore --overwrite ./src
+trash restore --overwrite ./src
 ```
 
 Behavior:
@@ -150,7 +148,7 @@ Delete trashed items permanently.
 
 ```sh
 trash empty
-trash trash-empty 7
+trash empty 7
 ```
 
 Behavior:
@@ -163,8 +161,8 @@ Behavior:
 Delete matching trashed items permanently.
 
 ```sh
-trash rm '*.o'
-trash trash-rm '/workspace/tmp/*'
+trash rm *.o
+trash rm /workspace/tmp/*
 ```
 
 Behavior:
@@ -187,8 +185,8 @@ Behavior:
 - Native macOS entries depend on `.DS_Store` metadata being readable
 - If native metadata is missing for a file still present in the trash
   directory, the item may be skipped with a warning
-- For native macOS entries, the displayed trash time is derived from the file
-  modification time when a dedicated deletion timestamp is not available
+- For native macOS entries, the displayed time currently comes from the trash
+  item's file modification time, not a dedicated deletion timestamp
 - `restore` refuses to overwrite an existing destination unless `--overwrite`
   is set
 
@@ -197,7 +195,7 @@ Behavior:
 ```sh
 trash put ./notes.txt ./tmp/output.log
 trash list
-trash rm '*.log'
+trash rm *.log
 trash restore ./notes.txt
 trash empty 30
 ```

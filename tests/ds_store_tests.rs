@@ -4,7 +4,7 @@ mod temp;
 use std::path::Path;
 
 use temp::temp_dir;
-use trash_cli_macos::trash::ds_store::{read_entries, remove_trash_entry, upsert_trash_entry};
+use trash_cli::trash::ds_store::{read_entries, remove_trash_entry, upsert_trash_entry};
 
 #[test]
 fn upsert_and_remove_native_trash_entries_round_trip() {

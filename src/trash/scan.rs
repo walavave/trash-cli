@@ -94,11 +94,11 @@ fn scan_macos_root(root: &crate::trash::model::TrashRoot, report: &mut ScanRepor
                     .metadata()
                     .ok()
                     .and_then(|metadata| metadata.modified().ok());
-                let deletion_date = trashed_at.map(format_for_display);
+                let modified_date = trashed_at.map(format_for_display);
 
                 report.files.push(TrashedFile {
                     original_location,
-                    deletion_date,
+                    modified_date,
                     trashed_at,
                     trash_path: path,
                     trash_root: root.clone(),

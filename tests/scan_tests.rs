@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use trash_cli_macos::trash::scan::build_macos_original_location;
+use trash_cli::trash::scan::build_macos_original_location;
 
 #[test]
 fn builds_macos_original_location_from_relative_parent() {

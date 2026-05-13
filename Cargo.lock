@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "trash-cli-macos"
-version = "0.1.0"
+name = "trash-cli"
+version = "0.0.2"

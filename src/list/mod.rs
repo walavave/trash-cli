@@ -42,8 +42,8 @@ pub fn sort_items(items: &mut [TrashedFile], sort: SortMode) {
     match sort {
         SortMode::None => {}
         SortMode::Date => items.sort_by(|left, right| {
-            let left_key = left.deletion_date.as_deref().unwrap_or("");
-            let right_key = right.deletion_date.as_deref().unwrap_or("");
+            let left_key = left.modified_date.as_deref().unwrap_or("");
+            let right_key = right.modified_date.as_deref().unwrap_or("");
             left_key
                 .cmp(right_key)
                 .then_with(|| left.original_location.cmp(&right.original_location))
@@ -53,10 +53,10 @@ pub fn sort_items(items: &mut [TrashedFile], sort: SortMode) {
             let right_key = right.original_location.to_string_lossy();
             match left_key.cmp(&right_key) {
                 Ordering::Equal => left
-                    .deletion_date
+                    .modified_date
                     .as_deref()
                     .unwrap_or("")
-                    .cmp(right.deletion_date.as_deref().unwrap_or("")),
+                    .cmp(right.modified_date.as_deref().unwrap_or("")),
                 other => other,
             }
         }),
@@ -64,11 +64,11 @@ pub fn sort_items(items: &mut [TrashedFile], sort: SortMode) {
 }
 
 pub fn format_item(file: &TrashedFile) -> String {
-    let date = file.deletion_date.as_deref().unwrap_or("-");
+    let date = file.modified_date.as_deref().unwrap_or("-");
     format!("{date} {}", file.original_location.display())
 }
 
 pub fn format_indexed_item(index: usize, file: &TrashedFile) -> String {
-    let date = file.deletion_date.as_deref().unwrap_or("-");
+    let date = file.modified_date.as_deref().unwrap_or("-");
     format!("{index:4} {date} {}", file.original_location.display())
 }

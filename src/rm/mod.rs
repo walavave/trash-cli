@@ -6,7 +6,7 @@ use crate::trash::scan::scan;
 pub fn run(cli: &Cli) -> Result<()> {
     let pattern = cli
         .rm_pattern()
-        .ok_or_else(|| Error::message("trash-rm requires a pattern"))?;
+        .ok_or_else(|| Error::message("rm requires a pattern"))?;
     let report = scan(cli)?;
     for warning in &report.warnings {
         eprintln!("WARN: {warning}");

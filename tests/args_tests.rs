@@ -1,34 +1,15 @@
-use std::path::PathBuf;
-
-use trash_cli_macos::args::{Command, parse_from};
-
-#[test]
-fn parses_trash_list_alias() {
-    let cli = parse_from(["trash-list", "/tmp"]).expect("trash-list should parse");
-    match cli.command {
-        Command::List {
-            target_path: Some(path),
-            ..
-        } => assert_eq!(path, PathBuf::from("/tmp")),
-        other => panic!("unexpected command: {other:?}"),
-    }
-}
-
-#[test]
-fn parses_trash_put_alias() {
-    let cli = parse_from(["trash-put", "foo.txt"]).expect("trash-put should parse");
-    match cli.command {
-        Command::Put { paths } => assert_eq!(paths, vec![PathBuf::from("foo.txt")]),
-        other => panic!("unexpected command: {other:?}"),
-    }
-}
+use trash_cli::args::{Command, parse_from};
 
 #[test]
 fn usage_uses_trash_binary_name() {
-    let usage = trash_cli_macos::args::usage();
+    let usage = trash_cli::args::usage();
     assert!(usage.starts_with("trash "));
-    assert!(usage.contains("\n  trash [put|trash-put] [OPTIONS] FILE...\n"));
+    assert!(usage.contains("\n  trash put [OPTIONS] FILE...\n"));
+    assert!(usage.contains("\n  trash rm PATTERN\n"));
+    assert!(usage.contains("rm PATTERN:"));
+    assert!(usage.contains("Supports * and ? wildcards."));
     assert!(!usage.contains("trash-cli-macos"));
+    assert!(!usage.contains("trash-put"));
 }
 
 #[test]
@@ -45,4 +26,12 @@ fn no_args_defaults_to_help() {
 fn bare_positional_is_not_treated_as_restore() {
     let err = parse_from(["foo"]).expect_err("bare positional should be rejected");
     assert_eq!(err.to_string(), "unknown command: foo");
+}
+
+#[test]
+fn rejects_removed_alias_commands() {
+    for alias in ["trash-list", "trash-put", "trash-restore", "trash-empty", "trash-rm"] {
+        let err = parse_from([alias]).expect_err("removed alias should be rejected");
+        assert_eq!(err.to_string(), format!("unknown command: {alias}"));
+    }
 }

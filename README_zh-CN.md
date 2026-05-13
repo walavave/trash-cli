@@ -10,8 +10,6 @@
 
 - 支持与 `trash-cli` 常见用法对应的命令集合：
   `put`、`list`、`restore`、`empty` 和 `rm`
-- 同时接受简短子命令和上游风格别名：
-  `trash-put`、`trash-list`、`trash-restore`、`trash-empty`、`trash-rm`
 - 能从 `.DS_Store` 读取 macOS 原生回收站元数据
 - 会把新放入回收站的条目直接写回 macOS 原生 Trash 结构
 - 支持 home 回收站、卷顶层回收站、挂载卷回收站和自定义回收站根目录
@@ -62,8 +60,7 @@ cargo test
 
 ```sh
 brew tap walavave/tap
-brew install --formula walavave/tap/trash-cli-macos
-trash --version
+brew install --formula walavave/tap/trash-cli
 ```
 
 ## 命令概览
@@ -71,11 +68,11 @@ trash --version
 当前二进制是单个可执行文件，通过子命令工作：
 
 ```text
-trash [restore|trash-restore] [OPTIONS] [PATH]
-trash [list|trash-list] [OPTIONS] [PATH]
-trash [put|trash-put] [OPTIONS] FILE...
-trash [empty|trash-empty] [OPTIONS] [DAYS]
-trash [rm|trash-rm] [OPTIONS] PATTERN
+trash restore [OPTIONS] [PATH]
+trash list [OPTIONS] [PATH]
+trash put [OPTIONS] FILE...
+trash empty [OPTIONS] [DAYS]
+trash rm [OPTIONS] PATTERN
 ```
 
 如果不显式传入命令，会直接显示帮助。
@@ -96,7 +93,7 @@ trash [rm|trash-rm] [OPTIONS] PATTERN
 
 ```sh
 trash put ./foo.txt ./build.log
-trash trash-put ./dir-a ./dir-b
+trash put ./dir-a ./dir-b
 ```
 
 说明：
@@ -110,7 +107,7 @@ trash trash-put ./dir-a ./dir-b
 
 ```sh
 trash list
-trash trash-list ./src
+trash list ./src
 trash list --sort path
 ```
 
@@ -129,7 +126,7 @@ YYYY-MM-DD HH:MM:SS /original/path
 ```sh
 trash restore
 trash restore ./src
-trash trash-restore --overwrite ./src
+trash restore --overwrite ./src
 ```
 
 行为：
@@ -144,7 +141,7 @@ trash trash-restore --overwrite ./src
 
 ```sh
 trash empty
-trash trash-empty 7
+trash empty 7
 ```
 
 行为：
@@ -158,7 +155,7 @@ trash trash-empty 7
 
 ```sh
 trash rm '*.o'
-trash trash-rm '/workspace/tmp/*'
+trash rm '/workspace/tmp/*'
 ```
 
 行为：
@@ -179,7 +176,7 @@ trash trash-rm '/workspace/tmp/*'
 
 - 原生 macOS 条目依赖 `.DS_Store` 可读
 - 如果原生回收站目录里还有文件，但缺少对应元数据，扫描时会给出 warning 并跳过
-- 对原生条目，如果没有专门的删除时间，显示时间会退化为文件修改时间
+- 对原生条目，当前显示时间直接来自垃圾桶中文件的修改时间，不是专门的删除时间
 - `restore` 默认拒绝覆盖已有目标，只有显式传入 `--overwrite` 才会覆盖
 
 ## 示例流程

@@ -1,4 +1,4 @@
-use trash_cli_macos::rm::matches_original_location;
+use trash_cli::rm::matches_original_location;
 
 #[test]
 fn matches_basename_patterns() {

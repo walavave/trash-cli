@@ -1,5 +1,5 @@
 fn main() {
-    if let Err(err) = trash_cli_macos::app::run() {
+    if let Err(err) = trash_cli::app::run() {
         eprintln!("error: {err}");
         std::process::exit(1);
     }

@@ -1,6 +1,6 @@
 use std::time::{Duration, SystemTime};
 
-use trash_cli_macos::empty::should_delete;
+use trash_cli::empty::should_delete;
 
 #[test]
 fn deletes_everything_without_cutoff() {

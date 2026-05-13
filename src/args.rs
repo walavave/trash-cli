@@ -160,10 +160,7 @@ where
                 sort = parse_sort(&value)?;
             }
             "--overwrite" => overwrite = true,
-            "restore" | "trash-restore" | "list" | "trash-list" | "put" | "trash-put" | "empty"
-            | "trash-empty" | "rm" | "trash-rm"
-                if command.is_none() =>
-            {
+            "restore" | "list" | "put" | "empty" | "rm" if command.is_none() => {
                 command = Some(arg);
             }
             value if value.starts_with('-') => {
@@ -177,7 +174,7 @@ where
     }
 
     let command = match command.as_deref() {
-        Some("restore") | Some("trash-restore") => {
+        Some("restore") => {
             if positional.len() > 1 {
                 return Err(Error::message("only one positional path is supported"));
             }
@@ -187,7 +184,7 @@ where
                 overwrite,
             }
         }
-        Some("list") | Some("trash-list") => {
+        Some("list") => {
             if positional.len() > 1 {
                 return Err(Error::message("only one positional path is supported"));
             }
@@ -196,13 +193,13 @@ where
                 sort,
             }
         }
-        Some("put") | Some("trash-put") => Command::Put {
+        Some("put") => Command::Put {
             paths: positional.into_iter().map(PathBuf::from).collect(),
         },
-        Some("empty") | Some("trash-empty") => Command::Empty {
+        Some("empty") => Command::Empty {
             days: parse_days(positional)?,
         },
-        Some("rm") | Some("trash-rm") => Command::Rm {
+        Some("rm") => Command::Rm {
             pattern: parse_pattern(positional)?,
         },
         None => {
@@ -229,23 +226,18 @@ pub fn usage() -> String {
         r#"{APP_NAME} {}
 
 Usage:
-  {APP_NAME} [restore|trash-restore] [OPTIONS] [PATH]
-  {APP_NAME} [list|trash-list] [OPTIONS] [PATH]
-  {APP_NAME} [put|trash-put] [OPTIONS] FILE...
-  {APP_NAME} [empty|trash-empty] [OPTIONS] [DAYS]
-  {APP_NAME} [rm|trash-rm] [OPTIONS] PATTERN
+  {APP_NAME} restore [OPTIONS] [PATH]
+  {APP_NAME} list [PATH]
+  {APP_NAME} put FILE...
+  {APP_NAME} empty [DAYS]
+  {APP_NAME} rm PATTERN
 
 Commands:
   restore                 Restore trashed files
-  trash-restore           Alias for restore
   list                    List trashed files
-  trash-list              Alias for list
   put                     Move files to trash
-  trash-put               Alias for put
   empty                   Empty trash
-  trash-empty             Alias for empty
-  rm                      Remove matching trashed files
-  trash-rm                Alias for rm
+  rm                      Remove trashed files matching basename or full path glob
 
 Options:
   --sort date|path|none   Sort output [default: date]
@@ -253,6 +245,10 @@ Options:
   --overwrite             Overwrite existing files when restoring
   -h, --help              Show this help message
   --version               Show version
+
+rm PATTERN:
+  If PATTERN starts with /, it matches the full original path.
+  Otherwise, it matches only the basename. Supports * and ? wildcards.
 "#,
         env!("CARGO_PKG_VERSION")
     )
@@ -283,7 +279,7 @@ fn parse_days(positional: Vec<String>) -> Result<Option<u64>> {
 fn parse_pattern(positional: Vec<String>) -> Result<String> {
     match positional.as_slice() {
         [value] => Ok(value.clone()),
-        [] => Err(Error::message("trash-rm requires a pattern")),
+        [] => Err(Error::message("rm requires a pattern")),
         _ => Err(Error::message("only one pattern is supported")),
     }
 }

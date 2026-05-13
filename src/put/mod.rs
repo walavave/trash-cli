@@ -13,7 +13,7 @@ pub fn run(cli: &Cli) -> Result<()> {
     let cwd = env::current_dir()?;
     let paths = cli.put_paths();
     if paths.is_empty() {
-        return Err(Error::message("trash-put requires at least one path"));
+        return Err(Error::message("put requires at least one path"));
     }
 
     for input in paths {
