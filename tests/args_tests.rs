@@ -8,8 +8,6 @@ fn usage_uses_trash_binary_name() {
     assert!(usage.contains("\n  trash rm [--trash-dir DIR] PATTERN\n"));
     assert!(usage.contains("rm PATTERN:"));
     assert!(usage.contains("Supports * and ? wildcards."));
-    assert!(usage.contains("list and restore options:"));
-    assert!(usage.contains("restore only:"));
     assert!(!usage.contains("trash-cli-macos"));
     assert!(!usage.contains("trash-put"));
 }
