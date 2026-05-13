@@ -1,15 +1,15 @@
-# trash-cli-macos
+# trash-cli
 
-`trash-cli-macos` is a Rust trash utility focused on macOS trash locations.
+Only Works on macOS (Already tested on macOS 26) 
+
+`walavave/trash-cli` is a Rust trash utility focused on macOS trash locations.
 It implements a file-system-based workflow for trashing, listing, restoring,
 emptying, and selectively removing trashed files without relying on Finder or
 AppleScript.
 
-For Simplified Chinese documentation, see [README_zh-CN.md](README_zh-CN.md).
-
 ## Features
 
-- Supports the command set commonly associated with `trash-cli`:
+- Supports the command:
   `put`, `list`, `restore`, `empty`, and `rm`
 - Reads native macOS Trash metadata from `.DS_Store`
 - Writes new trashed entries back into the native macOS Trash structure
@@ -17,30 +17,128 @@ For Simplified Chinese documentation, see [README_zh-CN.md](README_zh-CN.md).
   custom trash roots
 - Supports restore overwrite control and interactive multi-selection
 
-## Status
+## Install
 
-This project intentionally does not call Finder APIs. All operations are
-performed directly against native macOS Trash directories:
+**Recommend**: Get the binary release, untar it, and move it somewhere on your $PATH (only support Mac with arm chip)
 
-- trashed files are moved into the native Trash directory itself
-- original-location metadata is stored in `.DS_Store`
+```sh
+tar -xzf "trash-cli-${VERSION}-aarch64-apple-darwin.tar.gz"
+sudo install -m 755 "trash-cli-${VERSION}-aarch64-apple-darwin/trash" /usr/local/bin/trash
+```
+When you run the command for the first time, such as `trash --version`, a system warning will pop up. Go to System Settings > Privacy & Security, then scroll to the bottom and click `Allow Anyway`.
 
-This keeps the implementation scriptable while matching the native macOS Trash
-layout instead of introducing a custom side directory.
+or build it with cargo:
 
-## Supported Locations
+```sh
+cargo install --path . --locked
+```
 
-- `~/.Trash`
-- `/.Trashes/<uid>`
-- `/Volumes/*/.Trashes/<uid>`
-- custom `--trash-dir DIR` roots
+macOS users can install it with Homebrew:
 
-Custom trash roots can contain either:
+```sh
+brew tap walavave/tap
+brew install --formula walavave/tap/trash-cli
+```
 
-- native macOS Trash entries stored directly in the root directory
-- native macOS metadata via `.DS_Store`
+## Usage
 
-## Build
+### Command Overview
+
+```text
+trash list [--sort date|path|none] [--trash-dir DIR] [PATH]
+trash restore [--sort date|path|none] [--trash-dir DIR] [--overwrite] [PATH]
+trash put [--trash-dir DIR] FILE...
+trash empty [--trash-dir DIR] [DAYS]
+trash rm [--trash-dir DIR] PATTERN
+```
+
+If no command is provided, the tool shows help.
+
+Global options:
+
+- `-h`, `--help` show usage
+- `--version` show version
+
+`rm PATTERN`:
+
+- If `PATTERN` starts with `/`, it matches the full original path
+- Otherwise, it matches only the basename
+- Supported wildcards are `*` and `?`
+- Quote the pattern to prevent shell expansion
+
+### Command Details
+
+#### `put`
+
+Move one or more files or directories into the trash.
+
+```sh
+trash put ./foo.txt ./build.log
+trash put ./dir-a ./dir-b
+```
+
+- If a trashed name already exists inside the target trash root, the tool will
+  create a unique name such as `name_1`, `name_2`, and so on
+- This command updates native `.DS_Store` metadata for the files it trashes
+
+#### `list`
+
+List trashed files.
+
+```sh
+trash list
+trash list ./src
+trash list --sort path
+```
+
+Output format:
+
+```text
+YYYY-MM-DD HH:MM:SS /original/path
+```
+
+- When a `PATH` is provided, only entries whose original location matches or is
+inside that path are shown.
+- **Date and time shown are the last modification time of files, NOT the deletion time**.
+
+
+#### `restore`
+
+Interactively restore trashed files.
+
+```sh
+trash restore
+trash restore ./src
+trash restore --overwrite ./src
+```
+
+- matching entries are displayed with zero-based indexes
+- input accepts a single index, comma-separated indexes, or ranges such as
+  `0,2-4`
+- pressing Enter without a selection restores nothing
+
+#### `empty`
+
+Delete trashed items permanently.
+
+```sh
+trash empty
+trash empty 7
+```
+
+- without `DAYS`, all discovered trashed items are removed
+- with `DAYS`, only items trashed at least that many days ago are removed
+
+#### `rm`
+
+Delete matching trashed items permanently.
+
+```sh
+trash rm *.o
+trash rm /workspace/tmp/*
+```
+
+## How to build
 
 ```sh
 cargo build
@@ -59,143 +157,6 @@ Run the test suite:
 cargo test
 ```
 
-## Homebrew
+## Related
 
-```sh
-brew tap walavave/tap
-brew install --formula walavave/tap/trash-cli
-trash --version
-```
-
-## Command Overview
-
-The binary is a single executable with subcommands:
-
-```text
-trash restore [OPTIONS] [PATH]
-trash list [OPTIONS] [PATH]
-trash put [OPTIONS] FILE...
-trash empty [OPTIONS] [DAYS]
-trash rm [OPTIONS] PATTERN
-```
-
-If no command is provided, the tool shows help.
-
-Global options:
-
-- `--trash-dir DIR` scan or operate on a specific trash root
-- `--sort date|path|none` sort `list` and `restore` candidates
-- `--overwrite` allow `restore` to replace existing destination files
-- `-h`, `--help` show usage
-- `--version` show version
-
-## Command Details
-
-### `put`
-
-Move one or more files or directories into the trash.
-
-```sh
-trash put ./foo.txt ./build.log
-trash put ./dir-a ./dir-b
-```
-
-Notes:
-
-- If a trashed name already exists inside the target trash root, the tool will
-  create a unique name such as `name_1`, `name_2`, and so on
-- This command updates native `.DS_Store` metadata for the files it trashes
-
-### `list`
-
-List trashed files.
-
-```sh
-trash list
-trash list ./src
-trash list --sort path
-```
-
-Output format:
-
-```text
-YYYY-MM-DD HH:MM:SS /original/path
-```
-
-When a `PATH` is provided, only entries whose original location matches or is
-inside that path are shown.
-
-### `restore`
-
-Interactively restore trashed files.
-
-```sh
-trash restore
-trash restore ./src
-trash restore --overwrite ./src
-```
-
-Behavior:
-
-- matching entries are displayed with zero-based indexes
-- input accepts a single index, comma-separated indexes, or ranges such as
-  `0,2-4`
-- pressing Enter without a selection restores nothing
-
-### `empty`
-
-Delete trashed items permanently.
-
-```sh
-trash empty
-trash empty 7
-```
-
-Behavior:
-
-- without `DAYS`, all discovered trashed items are removed
-- with `DAYS`, only items trashed at least that many days ago are removed
-
-### `rm`
-
-Delete matching trashed items permanently.
-
-```sh
-trash rm *.o
-trash rm /workspace/tmp/*
-```
-
-Behavior:
-
-- if the pattern starts with `/`, it matches the full original path
-- otherwise, it matches only the basename
-- supported wildcards are `*` and `?`
-- quote the pattern to prevent shell expansion
-
-## Differences From Upstream `trash-cli`
-
-- This project is a Rust implementation for macOS trash locations
-- It is a single binary with subcommands rather than separate installed
-  executables
-- It does not use Finder integration
-- It reads and writes native macOS Trash metadata through `.DS_Store`
-
-## Notes and Caveats
-
-- Native macOS entries depend on `.DS_Store` metadata being readable
-- If native metadata is missing for a file still present in the trash
-  directory, the item may be skipped with a warning
-- For native macOS entries, the displayed time currently comes from the trash
-  item's file modification time, not a dedicated deletion timestamp
-- `restore` refuses to overwrite an existing destination unless `--overwrite`
-  is set
-
-## Example Session
-
-```sh
-trash put ./notes.txt ./tmp/output.log
-trash list
-trash rm *.log
-trash restore ./notes.txt
-trash empty 30
-```
+If you are using Linux, you should try [trash-cli](https://github.com/andreafrancia/trash-cli)

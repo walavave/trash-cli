@@ -4,10 +4,12 @@ use trash_cli::args::{Command, parse_from};
 fn usage_uses_trash_binary_name() {
     let usage = trash_cli::args::usage();
     assert!(usage.starts_with("trash "));
-    assert!(usage.contains("\n  trash put [OPTIONS] FILE...\n"));
-    assert!(usage.contains("\n  trash rm PATTERN\n"));
+    assert!(usage.contains("\n  trash put [--trash-dir DIR] FILE...\n"));
+    assert!(usage.contains("\n  trash rm [--trash-dir DIR] PATTERN\n"));
     assert!(usage.contains("rm PATTERN:"));
     assert!(usage.contains("Supports * and ? wildcards."));
+    assert!(usage.contains("list and restore options:"));
+    assert!(usage.contains("restore only:"));
     assert!(!usage.contains("trash-cli-macos"));
     assert!(!usage.contains("trash-put"));
 }

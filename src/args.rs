@@ -226,29 +226,33 @@ pub fn usage() -> String {
         r#"{APP_NAME} {}
 
 Usage:
-  {APP_NAME} restore [OPTIONS] [PATH]
-  {APP_NAME} list [PATH]
-  {APP_NAME} put FILE...
-  {APP_NAME} empty [DAYS]
-  {APP_NAME} rm PATTERN
+  {APP_NAME} list [--sort date|path|none] [--trash-dir DIR] [PATH]
+  {APP_NAME} restore [--sort date|path|none] [--trash-dir DIR] [--overwrite] [PATH]
+  {APP_NAME} put [--trash-dir DIR] FILE...
+  {APP_NAME} empty [--trash-dir DIR] [DAYS]
+  {APP_NAME} rm [--trash-dir DIR] PATTERN
 
 Commands:
-  restore                 Restore trashed files
-  list                    List trashed files
-  put                     Move files to trash
-  empty                   Empty trash
+  list                    List files in trash
+  restore                 Restore files from trash
+  put                     Move files or directories to trash
+  empty                   Empty trash permanently
   rm                      Remove trashed files matching basename or full path glob
 
-Options:
-  --sort date|path|none   Sort output [default: date]
-  --trash-dir DIR         Scan a specific trash directory root
-  --overwrite             Overwrite existing files when restoring
+Global options:
   -h, --help              Show this help message
-  --version               Show version
+  --version               Show version information
 
 rm PATTERN:
   If PATTERN starts with /, it matches the full original path.
   Otherwise, it matches only the basename. Supports * and ? wildcards.
+
+Examples:
+  {APP_NAME} put file.txt documents/
+  {APP_NAME} list --sort path
+  {APP_NAME} restore --overwrite
+  {APP_NAME} empty 30
+  {APP_NAME} rm "*.log"
 "#,
         env!("CARGO_PKG_VERSION")
     )

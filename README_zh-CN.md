@@ -1,110 +1,74 @@
-# trash-cli-macos
+# trash-cli
+**仅适用于 macOS（已在 macOS Tahoe 26 测试通过）**
 
-`trash-cli-macos` 是一个面向 macOS 回收站目录的 Rust 命令行工具。
-它通过纯文件系统方式实现放入回收站、列出、恢复、清空和按模式删除，
-不依赖 Finder 或 AppleScript。
+`walavave/trash-cli` 是一款专为 macOS 回收站设计的 Rust 命令行工具。
+它实现了基于文件系统的文件删除、列出、恢复、清空和选择性删除工作流，
+**无需依赖 Finder 或 AppleScript** 即可操作原生 macOS 回收站。
 
-英文版文档见 [README.md](README.md)。
+## 核心特性
+- 支持完整命令：`put`、`list`、`restore`、`empty`、`rm`
+- 直接读取 macOS 原生回收站元数据（`.DS_Store`）
+- 写入新的删除记录到 macOS 原生回收站结构
+- 兼容用户主目录回收站、磁盘根目录回收站、挂载卷回收站和自定义回收站根目录
+- 支持恢复时覆盖控制、交互式多选恢复
 
-## 功能
+## 安装方式
 
-- 支持与 `trash-cli` 常见用法对应的命令集合：
-  `put`、`list`、`restore`、`empty` 和 `rm`
-- 能从 `.DS_Store` 读取 macOS 原生回收站元数据
-- 会把新放入回收站的条目直接写回 macOS 原生 Trash 结构
-- 支持 home 回收站、卷顶层回收站、挂载卷回收站和自定义回收站根目录
-- 支持恢复时覆盖控制和交互式多选恢复
-
-## 当前实现状态
-
-这个项目刻意不调用 Finder API，所有操作都直接针对 macOS 原生 Trash：
-
-- 被回收的文件直接移动到原生 Trash 目录
-- 原始路径等元数据写入 `.DS_Store`
-
-这样实现的目的，是在不依赖 Finder 的前提下，仍然保持与 macOS Trash
-目录结构一致，而不是再引入一层自定义侧边目录。
-
-## 支持的目录
-
-- `~/.Trash`
-- `/.Trashes/<uid>`
-- `/Volumes/*/.Trashes/<uid>`
-- 自定义 `--trash-dir DIR` 根目录
-
-自定义根目录既可以包含：
-
-- 直接存放在根目录中的原生 macOS Trash 条目
-- 通过 `.DS_Store` 表示的原生 macOS 元数据
-
-## 构建
-
+**推荐**：下载预编译二进制文件，解压并移动到系统可执行路径（**仅支持 ARM 架构 Mac**）：
 ```sh
-cargo build
+tar -xzf "trash-cli-${VERSION}-aarch64-apple-darwin.tar.gz"
+sudo install -m 755 "trash-cli-${VERSION}-aarch64-apple-darwin/trash" /usr/local/bin/trash
 ```
 
-构建安装后的实际命令 `trash`：
+第一次运行命令，如`trash --version`会弹出警告，进入系统设置>隐私与安全性。最下面点击`仍要打开`。
 
+或通过 Cargo 从源码编译安装：
 ```sh
-cargo build --release
-./target/release/trash --version
+cargo install --path . --locked
 ```
 
-运行测试：
-
-```sh
-cargo test
-```
-
-## Homebrew 安装
-
+macOS 用户也可以使用 Homebrew 安装：
 ```sh
 brew tap walavave/tap
 brew install --formula walavave/tap/trash-cli
 ```
 
-## 命令概览
-
-当前二进制是单个可执行文件，通过子命令工作：
-
+## 使用说明
+### 命令总览
 ```text
-trash restore [OPTIONS] [PATH]
-trash list [OPTIONS] [PATH]
-trash put [OPTIONS] FILE...
-trash empty [OPTIONS] [DAYS]
-trash rm [OPTIONS] PATTERN
+trash list [--sort date|path|none] [--trash-dir DIR] [PATH]
+trash restore [--sort date|path|none] [--trash-dir DIR] [--overwrite] [PATH]
+trash put [--trash-dir DIR] FILE...
+trash empty [--trash-dir DIR] [DAYS]
+trash rm [--trash-dir DIR] PATTERN
 ```
 
-如果不显式传入命令，会直接显示帮助。
+未输入命令时，工具会自动显示帮助信息。
 
-全局选项：
+**全局选项**：
+- `-h`, `--help`：显示帮助文档
+- `--version`：显示版本信息
 
-- `--trash-dir DIR` 扫描或操作指定回收站根目录
-- `--sort date|path|none` 为 `list` 和 `restore` 候选项排序
-- `--overwrite` 允许 `restore` 覆盖目标位置已有文件
-- `-h`、`--help` 显示帮助
-- `--version` 显示版本
+---
 
-## 命令详情
+### `rm` 匹配规则
+- 如果模式以 `/` 开头，匹配**完整原始路径**
+- 否则，仅匹配**文件/目录名称**
+- 支持通配符：`*`（匹配任意字符）、`?`（匹配单个字符）
+- 使用时请给模式加引号，避免被 Shell 提前解析
 
-### `put`
-
-把一个或多个文件或目录移动到回收站。
-
+### 命令详解
+#### `put`
+将文件或目录移动到回收站。
 ```sh
 trash put ./foo.txt ./build.log
 trash put ./dir-a ./dir-b
 ```
+- 若目标回收站存在同名文件，会自动重命名为 `name_1`、`name_2` 等
+- 该命令会自动更新 `.DS_Store` 元数据
 
-说明：
-
-- 如果目标回收站里已经存在同名条目，会自动生成唯一名称，例如 `name_1`、`name_2`
-- 该命令会更新原生 `.DS_Store` 元数据
-
-### `list`
-
-列出回收站文件。
-
+#### `list`
+列出回收站中的文件。
 ```sh
 trash list
 trash list ./src
@@ -112,79 +76,56 @@ trash list --sort path
 ```
 
 输出格式：
-
 ```text
 YYYY-MM-DD HH:MM:SS /original/path
 ```
+- 指定 `PATH` 时，仅显示原始路径位于该目录下的文件
+- **显示的时间为文件最后修改时间，并非删除时间**
 
-如果提供 `PATH`，只显示原始路径与该路径相同或位于其内部的条目。
-
-### `restore`
-
+#### `restore`
 交互式恢复回收站文件。
-
 ```sh
 trash restore
 trash restore ./src
 trash restore --overwrite ./src
 ```
+- 匹配项会显示从 0 开始的序号
+- 支持输入：单个序号、逗号分隔序号、范围（如 `0,2-4`）
+- 直接回车不选择，不恢复任何文件
 
-行为：
-
-- 会先显示匹配条目及其从 0 开始的索引
-- 输入支持单个索引、逗号分隔索引和范围，如 `0,2-4`
-- 直接按回车表示不恢复任何文件
-
-### `empty`
-
-永久删除回收站条目。
-
+#### `empty`
+**永久删除**回收站文件。
 ```sh
 trash empty
 trash empty 7
 ```
+- 不指定天数：清空所有文件
+- 指定天数：仅删除超过该天数的文件
 
-行为：
-
-- 不带 `DAYS` 时，会删除扫描到的全部回收站条目
-- 带 `DAYS` 时，只删除至少在这么多天之前进入回收站的条目
-
-### `rm`
-
-永久删除与模式匹配的回收站条目。
-
+#### `rm`
+根据匹配规则**永久删除**指定回收站文件。
 ```sh
-trash rm '*.o'
-trash rm '/workspace/tmp/*'
+trash rm "*.o"
+trash rm "/workspace/tmp/*"
 ```
 
-行为：
-
-- 如果模式以 `/` 开头，则匹配完整原始路径
-- 否则只匹配 basename
-- 支持的通配符只有 `*` 和 `?`
-- 传入模式时应加引号，避免被 shell 提前展开
-
-## 与上游 `trash-cli` 的差异
-
-- 这是一个针对 macOS 回收站目录的 Rust 实现
-- 当前是单个二进制加子命令，而不是多个独立安装的命令
-- 不依赖 Finder 集成
-- 通过 `.DS_Store` 读取和写入原生 macOS 回收站元数据
-
-## 注意事项
-
-- 原生 macOS 条目依赖 `.DS_Store` 可读
-- 如果原生回收站目录里还有文件，但缺少对应元数据，扫描时会给出 warning 并跳过
-- 对原生条目，当前显示时间直接来自垃圾桶中文件的修改时间，不是专门的删除时间
-- `restore` 默认拒绝覆盖已有目标，只有显式传入 `--overwrite` 才会覆盖
-
-## 示例流程
-
+## 编译构建
+基础编译：
 ```sh
-trash put ./notes.txt ./tmp/output.log
-trash list
-trash rm '*.log'
-trash restore ./notes.txt
-trash empty 30
+cargo build
 ```
+
+构建发布版可执行文件（生成 `trash`）：
+```sh
+cargo build --release
+./target/release/trash --version
+```
+
+运行测试：
+```sh
+cargo test
+```
+
+## 相关项目
+
+如果你使用 Linux，推荐使用[trash-cli](https://github.com/andreafrancia/trash-cli)
